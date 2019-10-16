@@ -7,6 +7,23 @@
 
 char* operators[] = {"<", ">", "&&", "||", "&", "|", ";"};
 
+void print_ast(sh_ast* ast) {
+  if(!ast) {
+    puts("NULL");
+    return;
+  }
+  puts("=========");
+  printf("op: %s\n", ast->op);
+  for(int i=0;i<4;i++) {
+    printf("%s\t", ast->argv[i]);
+  }
+  puts("=========");
+  puts("left:");
+  print_ast(ast->left);
+  puts("right:");
+  print_ast(ast->right);
+}
+
 sh_ast* 
 make_ast(char* op, sh_ast* left, sh_ast* right, char** argv, int len) {
   // for(int i=0;i<len;i++)
@@ -66,22 +83,26 @@ int is_op(char* str) {
 }
 
 sh_ast* parse(list* toks) {
+  if(!toks) {
+    return NULL;
+  }
   int len = 0;
   list* it = toks;
   while(it) {
     if(is_op(it->head)) {
+      char* op = strdup(it->head);
+      printf("found op: %s\n", op);
       list* part = slice(toks, 0, len);
-      return make_ast(it->head, parse(it->tail), parse(part), NULL, 0);
+      return make_ast(op, parse(it->tail), parse(part), NULL, 0);
     }
     it = it->tail;
     len++;
   }
   
   list* part = rev_slice(toks, 0, len);
-  // printf("\nmaking ast from: %d\n", len);
   char** com = to_array(part, len);
   // for(int i=0;i<len;i++) {
-    // printf("array: %s", com[i]);
+  //   printf("array: %s", com[i]);
   // }
   return make_ast(NULL, NULL, NULL, com, len + 1);
 }
