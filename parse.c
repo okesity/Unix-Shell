@@ -5,6 +5,8 @@
 
 #include "parse.h"
 
+char* operators[] = {"<", ">", "&&", "||", "&", "|", ";"};
+
 sh_ast* 
 make_ast(char* op, sh_ast* left, sh_ast* right, char** argv, int len) {
   // for(int i=0;i<len;i++)
@@ -19,10 +21,9 @@ make_ast(char* op, sh_ast* left, sh_ast* right, char** argv, int len) {
   return res;
 }
 
-// attribution: func slice taken from classnotes
+// attribution: function slice taken from classnotes
 list*
-rev_slice(list* xs, int i0, int i1)
-{
+rev_slice(list *xs, int i0, int i1) {
   list* ys = 0;
   list* it = xs;
   for (int ii = 0; ii < i0; ++ii) {
@@ -33,6 +34,14 @@ rev_slice(list* xs, int i0, int i1)
     it = it->tail;
   }
   return ys;
+}
+
+list*
+slice(list* xs, int i0, int i1)
+{
+  list* ys = rev_slice(xs, i0, i1); 
+  free(xs);
+  return reverse(ys);
 }
 
 char** to_array(list* toks, int count) {
@@ -48,18 +57,31 @@ char** to_array(list* toks, int count) {
   return res;
 }
 
+int is_op(char* str) {
+  for(int i=0; i<7;i++) {
+    if(strcmp(str, operators[i]) == 0)
+      return 1;
+  }
+  return 0;
+}
+
 sh_ast* parse(list* toks) {
   int len = 0;
   list* it = toks;
   while(it) {
+    if(is_op(it->head)) {
+      list* part = slice(toks, 0, len);
+      return make_ast(it->head, parse(it->tail), parse(part), NULL, 0);
+    }
     it = it->tail;
     len++;
   }
+  
   list* part = rev_slice(toks, 0, len);
   // printf("\nmaking ast from: %d\n", len);
   char** com = to_array(part, len);
   // for(int i=0;i<len;i++) {
     // printf("array: %s", com[i]);
   // }
-  return make_ast("=", NULL, NULL, com, len + 1);
+  return make_ast(NULL, NULL, NULL, com, len + 1);
 }
