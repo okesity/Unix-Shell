@@ -55,9 +55,9 @@ int do_background(sh_ast* cmd) {
 
 int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
   int cpid;
-  int rv; 
 
   if((cpid = fork())) {
+    int rv; 
     int st;
     rv = waitpid(cpid, &st, 0);
     assert(rv != -1);
@@ -65,17 +65,19 @@ int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
     if(WEXITSTATUS(st)) {
       exit(EXIT_FAILURE);
     }
+    return rv;
+
   }
   else {
     // printf("\nstarting ANDOR child %d\n", getpid());
     int st = ast_evalue(left);
     if(!st ^ is_and) {
-      return st;
+      exit(0);
     }
     st = ast_evalue(right);
     return st;
   }
-  return rv;
+  return 0;
 }
 
 int do_redirect(sh_ast* left, sh_ast* right, int is_left) {

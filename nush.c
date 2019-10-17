@@ -44,9 +44,9 @@ main(int argc, char* argv[])
         int pid = getpid();
         while(it) {
             // printf("iterating %s\n", it->head);
-            if(getpid() != pid) {
-                exit(0);
-            }
+            // if(getpid() != pid) {
+            //     exit(0);
+            // }
             execute(it->head);
             it = it->tail;
             cnt++;
