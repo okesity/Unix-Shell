@@ -91,7 +91,7 @@ sh_ast* parse(list* toks) {
   while(it) {
     if(is_op(it->head)) {
       char* op = strdup(it->head);
-      printf("found op: %s\n", op);
+      // printf("found op: %s\n", op);
       list* part = slice(toks, 0, len);
       return make_ast(op, parse(it->tail), parse(part), NULL, 0);
     }
