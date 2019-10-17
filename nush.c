@@ -12,27 +12,36 @@
 #include <assert.h>
 
 void execute(char* cmd) {
+    // printf("getting cmd:%s\n", cmd);
     list* tokens = tokenize(cmd);
     sh_ast* asts = parse(tokens);
     int ret_val = ast_evalue(asts);
-    free_list(tokens);
 }
 
 int
 main(int argc, char* argv[])
 {
     char cmd[100];
-    
     if(argc == 2) {
+        list* cmds = NULL;
         FILE* file = fopen(argv[1], "r");
         if(!file) {
             puts("input file error!");
             exit(1);
         }
-        while(fgets(cmd, 99, file)) {
-            printf("getting command: %s", cmd);
-            execute(cmd);
+        //add all commands to list
+        while(fgets(cmd, 100, file)) {
+            char* du = strdup(cmd);
+            du[strlen(du) - 1] = '\0';
+            cmds = cons(du, cmds);
         }
+        cmds = reverse(cmds);
+        list* it = cmds;
+        while(it) {
+            execute(it->head);
+            it = it->tail;
+        }
+        free_list(cmds);
         fclose(file);
         return 0;
     }

@@ -61,11 +61,13 @@ int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
   }
   else {
     int st = ast_evalue(left);
+    printf("getting left rv: %d\n", st);
     if(!st ^ is_and) {
       exit(st);
     }
     st = ast_evalue(right);
-    exit(st);
+    printf("getting right rv: %d\n", st);
+    exit(EXIT_FAILURE);
   }
   return 0;
 }
@@ -105,7 +107,8 @@ int ast_evalue(sh_ast* ast) {
         // printf("getting op %s\n", op);
 
         if(is(op, ";")) {
-            ast_evalue(ast->left);
+            int rv = ast_evalue(ast->left);
+            printf("getting ; rv: %d\n", rv);
             return ast_evalue(ast->right);
         }
         else if(is(op, ">")) {
@@ -142,7 +145,8 @@ int ast_evalue(sh_ast* ast) {
         return 0;
     }
     else if (is(ast->argv[0], "exit")) {
-        exit(1);
+        puts("on exit");
+        return -1;
     }
 
     int cpid;
@@ -151,11 +155,11 @@ int ast_evalue(sh_ast* ast) {
 
             int status;
             waitpid(cpid, &status, 0);
-            // printf("main returning %d after exec\n", status);
+            printf("main returning %d after exec\n", status);
+            if (WIFEXITED(status)) {
+                printf("child exited with exit code (or main returned) %d\n", WEXITSTATUS(status));
+            }
             return status;
-            // if (WIFEXITED(status)) {
-            //     printf("child exited with exit code (or main returned) %d\n", WEXITSTATUS(status));
-            // }
         }
         else {
             // child process

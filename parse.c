@@ -38,6 +38,14 @@ make_ast(char* op, sh_ast* left, sh_ast* right, char** argv, int len) {
   return res;
 }
 
+void
+free_ast(sh_ast* ast) {
+  for(int i=0;i<20;i++) {
+    free(ast->argv[i]);
+  }
+  free(ast);
+}
+
 // attribution: function slice taken from classnotes
 list*
 rev_slice(list *xs, int i0, int i1) {
@@ -70,7 +78,7 @@ char** to_array(list* toks, int count) {
     it = it->tail;
   }
   res[count] = 0;
-  free(it);
+  free_list(toks);
   return res;
 }
 

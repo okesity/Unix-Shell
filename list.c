@@ -49,6 +49,7 @@ reverse(list* xs)
     for (; xs; xs = xs->tail) {
         ys = cons(xs->head, ys);
     }
+    free(xs);
     return ys;
 }
 
