@@ -37,6 +37,7 @@ main(int argc, char* argv[])
         }
         cmds = reverse(cmds);
         list* it = cmds;
+        // print_list(cmds);
         while(it) {
             execute(it->head);
             it = it->tail;

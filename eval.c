@@ -58,16 +58,19 @@ int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
   if((cpid = fork())) {
     int st;
     waitpid(cpid, &st, 0);
+    if(WEXITSTATUS(st)) {
+      // printf("Getting exit signal: \n");
+      exit(EXIT_FAILURE);
+    }
+    return st;
   }
   else {
     int st = ast_evalue(left);
-    printf("getting left rv: %d\n", st);
     if(!st ^ is_and) {
-      exit(st);
+      return st;
     }
     st = ast_evalue(right);
-    printf("getting right rv: %d\n", st);
-    exit(EXIT_FAILURE);
+    return st;
   }
   return 0;
 }
@@ -92,8 +95,8 @@ int do_redirect(sh_ast* left, sh_ast* right, int is_left) {
       }
       dup(fd);
       close(fd);
-      ast_evalue(left);
-      exit(EXIT_SUCCESS);
+      return ast_evalue(left);
+      // exit(EXIT_SUCCESS);
     }
     return 0;
 }
@@ -108,8 +111,8 @@ int ast_evalue(sh_ast* ast) {
 
         if(is(op, ";")) {
             int rv = ast_evalue(ast->left);
-            printf("getting ; rv: %d\n", rv);
-            return ast_evalue(ast->right);
+            rv = ast_evalue(ast->right);
+            return rv;
         }
         else if(is(op, ">")) {
             do_redirect(ast->left, ast->right, 0);
@@ -120,8 +123,8 @@ int ast_evalue(sh_ast* ast) {
             return 0;
         }
         else if(is(op, "&&")) {
-            do_andOr(ast->left, ast->right, 1);
-            return 0;
+            return do_andOr(ast->left, ast->right, 1);
+            // return 0;
         }        
         else if(is(op, "||")) {
             do_andOr(ast->left, ast->right, 0);
@@ -145,8 +148,8 @@ int ast_evalue(sh_ast* ast) {
         return 0;
     }
     else if (is(ast->argv[0], "exit")) {
-        puts("on exit");
-        return -1;
+        // puts("on exit");
+        exit(EXIT_FAILURE);
     }
 
     int cpid;
@@ -155,10 +158,6 @@ int ast_evalue(sh_ast* ast) {
 
             int status;
             waitpid(cpid, &status, 0);
-            printf("main returning %d after exec\n", status);
-            if (WIFEXITED(status)) {
-                printf("child exited with exit code (or main returned) %d\n", WEXITSTATUS(status));
-            }
             return status;
         }
         else {
