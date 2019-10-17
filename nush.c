@@ -10,11 +10,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <signal.h>
 
 void execute(char* cmd) {
-    // printf("getting cmd:%s\n", cmd);
     list* tokens = tokenize(cmd);
     sh_ast* asts = parse(tokens);
+    // print_ast(asts);
     int ret_val = ast_evalue(asts);
 }
 
@@ -35,15 +36,24 @@ main(int argc, char* argv[])
             du[strlen(du) - 1] = '\0';
             cmds = cons(du, cmds);
         }
+        fclose(file);
+
         cmds = reverse(cmds);
         list* it = cmds;
-        // print_list(cmds);
+        int cnt = 0;
+        int pid = getpid();
         while(it) {
+            // printf("iterating %s\n", it->head);
+            if(getpid() != pid) {
+                exit(0);
+            }
             execute(it->head);
             it = it->tail;
+            cnt++;
         }
+        // printf("pid: %d\n", getpid());
+
         free_list(cmds);
-        fclose(file);
         return 0;
     }
 
@@ -56,6 +66,6 @@ main(int argc, char* argv[])
         }
 
         execute(cmd);
-        
+
     }
 }

@@ -55,16 +55,19 @@ int do_background(sh_ast* cmd) {
 
 int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
   int cpid;
+  int rv; 
+
   if((cpid = fork())) {
     int st;
-    waitpid(cpid, &st, 0);
+    rv = waitpid(cpid, &st, 0);
+    assert(rv != -1);
+    // printf("ANDOR child done %d\n\n", cpid);
     if(WEXITSTATUS(st)) {
-      // printf("Getting exit signal: \n");
       exit(EXIT_FAILURE);
     }
-    return st;
   }
   else {
+    // printf("\nstarting ANDOR child %d\n", getpid());
     int st = ast_evalue(left);
     if(!st ^ is_and) {
       return st;
@@ -72,7 +75,7 @@ int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
     st = ast_evalue(right);
     return st;
   }
-  return 0;
+  return rv;
 }
 
 int do_redirect(sh_ast* left, sh_ast* right, int is_left) {
@@ -95,8 +98,8 @@ int do_redirect(sh_ast* left, sh_ast* right, int is_left) {
       }
       dup(fd);
       close(fd);
-      return ast_evalue(left);
-      // exit(EXIT_SUCCESS);
+      int rv = ast_evalue(left);
+      return rv;
     }
     return 0;
 }
@@ -123,10 +126,11 @@ int ast_evalue(sh_ast* ast) {
             return 0;
         }
         else if(is(op, "&&")) {
-            return do_andOr(ast->left, ast->right, 1);
-            // return 0;
+            do_andOr(ast->left, ast->right, 1);
+            return 0;
         }        
         else if(is(op, "||")) {
+            // printf("found or at %d\n", getpid());
             do_andOr(ast->left, ast->right, 0);
             return 0;
         }
@@ -152,21 +156,27 @@ int ast_evalue(sh_ast* ast) {
         exit(EXIT_FAILURE);
     }
 
+    // printf("eval ast current pid: %d\n", getpid());
     int cpid;
     if ((cpid = fork())) {
-            // parent process
+        // parent process
 
-            int status;
-            waitpid(cpid, &status, 0);
-            return status;
-        }
-        else {
-            // child process
-            // printf("evalutating: %s\n", ast->argv[0]);
-            // printf("evalutating: %s\n", ast->argv[1]);
-            execvp(ast->argv[0], ast->argv);
-            printf("Can't get here, exec only returns on error.");
-            exit(1);
-        }
-        return 0;
+        int status;
+        int rv;
+        rv = waitpid(cpid, &status, 0);
+        assert(rv != -1);
+
+        // printf("process done: %d\n", cpid);
+        return status;
+    }
+    else {
+        // printf("child process %d\n", getpid());
+        // printf("evalutating: %s\n", ast->argv[0]);
+        // printf("evalutating: %s\n", ast->argv[1]);
+        execvp(ast->argv[0], ast->argv);
+        printf("Can't get here, exec only returns on error.");
+        exit(1);
+    }
+
+    return 0;
 }
