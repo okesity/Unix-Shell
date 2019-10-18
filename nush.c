@@ -2,6 +2,7 @@
 #include "list.h"
 #include "parse.h"
 #include "eval.h"
+#include "hashmap.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -12,10 +13,12 @@
 #include <assert.h>
 #include <signal.h>
 
-void execute(char* cmd) {
+
+void execute(char* cmd, hashmap* map) {
+
     list* tokens = tokenize(cmd);
     // print_list(tokens);
-    sh_ast* asts = parse(tokens);
+    sh_ast* asts = parse(tokens, map);
     ast_evalue(asts);
     free_list(tokens);
     free_ast(asts); 
@@ -25,6 +28,8 @@ int
 main(int argc, char* argv[])
 {
     char cmd[100];
+    hashmap* map = make_hashmap();
+
     if(argc == 2) {
         list* cmds = NULL;
         FILE* file = fopen(argv[1], "r");
@@ -43,11 +48,12 @@ main(int argc, char* argv[])
         cmds = rev_free(cmds);
         list* it = cmds;
         while(it) {
-            execute(it->head);
+            execute(it->head, map);
             it = it->tail;
         }
 
         free_list(cmds);
+        free_hashmap(map);
         return 0;
     }
 
@@ -59,7 +65,7 @@ main(int argc, char* argv[])
             exit(0);
         }
 
-        execute(cmd);
+        execute(cmd, map);
 
     }
 }

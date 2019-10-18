@@ -112,6 +112,9 @@ int is(char* s1, char* s2) {
 }
 
 int ast_evalue(sh_ast* ast) {
+    if(!ast) {
+      return 0;
+    }
     if(ast->op) {
         char* op = ast->op;
         // printf("getting op %s\n", op);
