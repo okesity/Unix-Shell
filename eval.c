@@ -117,7 +117,8 @@ int ast_evalue(sh_ast* ast) {
         // printf("getting op %s\n", op);
 
         if(is(op, ";")) {
-            int rv = ast_evalue(ast->left);
+            int rv;
+            ast_evalue(ast->left);
             rv = ast_evalue(ast->right);
             return rv;
         }

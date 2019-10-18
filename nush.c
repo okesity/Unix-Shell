@@ -16,7 +16,7 @@ void execute(char* cmd) {
     list* tokens = tokenize(cmd);
     // print_list(tokens);
     sh_ast* asts = parse(tokens);
-    int ret_val = ast_evalue(asts);
+    ast_evalue(asts);
     free_list(tokens);
     free_ast(asts); 
 }
