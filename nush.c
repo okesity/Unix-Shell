@@ -14,9 +14,11 @@
 
 void execute(char* cmd) {
     list* tokens = tokenize(cmd);
+    // print_list(tokens);
     sh_ast* asts = parse(tokens);
-    // print_ast(asts);
     int ret_val = ast_evalue(asts);
+    free_list(tokens);
+    free_ast(asts);
 }
 
 int
@@ -37,21 +39,12 @@ main(int argc, char* argv[])
             cmds = cons(du, cmds);
         }
         fclose(file);
-
-        cmds = reverse(cmds);
+        cmds = rev_free(cmds);
         list* it = cmds;
-        int cnt = 0;
-        int pid = getpid();
         while(it) {
-            // printf("iterating %s\n", it->head);
-            // if(getpid() != pid) {
-            //     exit(0);
-            // }
             execute(it->head);
             it = it->tail;
-            cnt++;
         }
-        // printf("pid: %d\n", getpid());
 
         free_list(cmds);
         return 0;

@@ -61,12 +61,12 @@ rev_slice(list *xs, int i0, int i1) {
   return ys;
 }
 
+//return new list sliced from xs
 list*
 slice(list* xs, int i0, int i1)
 {
   list* ys = rev_slice(xs, i0, i1); 
-  free(xs);
-  return reverse(ys);
+  return rev_free(ys);
 }
 
 char** to_array(list* toks, int count) {
@@ -109,8 +109,6 @@ sh_ast* parse(list* toks) {
   
   list* part = rev_slice(toks, 0, len);
   char** com = to_array(part, len);
-  // for(int i=0;i<len;i++) {
-  //   printf("array: %s", com[i]);
-  // }
+
   return make_ast(NULL, NULL, NULL, com, len + 1);
 }

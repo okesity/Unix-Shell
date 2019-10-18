@@ -46,6 +46,7 @@ int do_pipe(sh_ast* left, sh_ast* right) {
 
 int do_background(sh_ast* cmd) {
   int cpid;
+  // printf("doing background %s\n", cmd->argv[0]);
   if(!(cpid = fork())) {
     int st = ast_evalue(cmd);
     exit(st);
