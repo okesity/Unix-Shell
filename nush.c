@@ -18,7 +18,7 @@ void execute(char* cmd) {
     sh_ast* asts = parse(tokens);
     int ret_val = ast_evalue(asts);
     free_list(tokens);
-    free_ast(asts);
+    free_ast(asts); 
 }
 
 int
@@ -37,6 +37,7 @@ main(int argc, char* argv[])
             char* du = strdup(cmd);
             du[strlen(du) - 1] = '\0';
             cmds = cons(du, cmds);
+            free(du);
         }
         fclose(file);
         cmds = rev_free(cmds);

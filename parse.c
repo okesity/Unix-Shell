@@ -28,21 +28,31 @@ sh_ast*
 make_ast(char* op, sh_ast* left, sh_ast* right, char** argv, int len) {
   // for(int i=0;i<len;i++)
     // printf("making ast: %s\n", argv[i]);
-  sh_ast* res = malloc(sizeof(sh_ast));
+  sh_ast* res = calloc(1, sizeof(sh_ast));
   res->op = op;
   res->left = left;
   res->right = right;
   for(int i=0;i<len;i++) {
-    res->argv[i] = argv[i]; 
+    res->argv[i] = argv[i];
+    // free(argv[i]);
   }
+  free(argv);
+  // for(int i=0;i<len;i++)
+  //   printf("adding : %s\n", res->argv[i]);
   return res;
 }
 
 void
 free_ast(sh_ast* ast) {
+  if(!ast) {
+    return;
+  }
   for(int i=0;i<20;i++) {
     free(ast->argv[i]);
   }
+  free(ast->op);
+  free_ast(ast->left);
+  free_ast(ast->right);
   free(ast);
 }
 
@@ -69,7 +79,8 @@ slice(list* xs, int i0, int i1)
   return rev_free(ys);
 }
 
-char** to_array(list* toks, int count) {
+char** 
+to_array(list* toks, int count) {
   char** res = malloc((count + 1) * sizeof(char*));
   list* it = toks;
   for(int i=0; i<count;i++) {
@@ -78,7 +89,6 @@ char** to_array(list* toks, int count) {
     it = it->tail;
   }
   res[count] = 0;
-  free_list(toks);
   return res;
 }
 
@@ -101,7 +111,9 @@ sh_ast* parse(list* toks) {
       char* op = strdup(it->head);
       // printf("found op: %s\n", op);
       list* part = slice(toks, 0, len);
-      return make_ast(op, parse(it->tail), parse(part), NULL, 0);
+      sh_ast* res = make_ast(op, parse(it->tail), parse(part), NULL, 0);
+      // free_list(part);
+      return res;
     }
     it = it->tail;
     len++;
@@ -109,6 +121,7 @@ sh_ast* parse(list* toks) {
   
   list* part = rev_slice(toks, 0, len);
   char** com = to_array(part, len);
+  free_list(part);
 
   return make_ast(NULL, NULL, NULL, com, len + 1);
 }

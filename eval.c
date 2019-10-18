@@ -84,6 +84,7 @@ int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
 int do_redirect(sh_ast* left, sh_ast* right, int is_left) {
     int cpid;
     // printf("redirect to: %s\n", right->argv[0]);
+    
     if((cpid = fork())) {
       waitpid(cpid, 0, 0);
     }
@@ -156,6 +157,7 @@ int ast_evalue(sh_ast* ast) {
     }
     else if (is(ast->argv[0], "exit")) {
         // puts("on exit");
+
         exit(EXIT_FAILURE);
     }
 
