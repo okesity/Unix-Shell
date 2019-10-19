@@ -14,7 +14,6 @@
 #include "tokens.h"
 #include "hashmap.h"
 
-// int do_redirect(sh_ast* left, sh_ast* right) {
 int do_pipe(sh_ast* left, sh_ast* right) {
   int cpid;
   if((cpid = fork())) {
@@ -62,7 +61,6 @@ int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
     int st;
     rv = waitpid(cpid, &st, 0);
     assert(rv != -1);
-    // printf("ANDOR child done %d\n\n", cpid);
     if(WEXITSTATUS(st)) {
       exit(EXIT_FAILURE);
     }
@@ -70,13 +68,12 @@ int do_andOr(sh_ast* left, sh_ast* right, int is_and) {
 
   }
   else {
-    // printf("\nstarting ANDOR child %d\n", getpid());
     int st = ast_evalue(left);
     if(!st ^ is_and) {
-      exit(0);
+      exit(st);
     }
     st = ast_evalue(right);
-    return st;
+    return st;   
   }
   return 0;
 }
@@ -103,7 +100,7 @@ int do_redirect(sh_ast* left, sh_ast* right, int is_left) {
       dup(fd);
       close(fd);
       int rv = ast_evalue(left);
-      return rv;
+      exit(rv);
     }
     return 0;
 }
@@ -117,7 +114,6 @@ int ast_evalue(sh_ast* ast) {
     }
     if(ast->op) {
         char* op = ast->op;
-        // printf("getting op %s\n", op);
 
         if(is(op, ";")) {
             int rv;
@@ -138,17 +134,14 @@ int ast_evalue(sh_ast* ast) {
             return 0;
         }        
         else if(is(op, "||")) {
-            // printf("found or at %d\n", getpid());
             do_andOr(ast->left, ast->right, 0);
             return 0;
         }
         else if(is(op, "&")) {
-            // printf("backgrounding: %s\n", op);
             do_background(ast->left);
             return 0;
         }
         else if(is(op, "|")) {
-            // printf("doing pipe: \n");
             do_pipe(ast->left, ast->right);
             return 0;
         }
@@ -163,7 +156,6 @@ int ast_evalue(sh_ast* ast) {
         exit(EXIT_FAILURE);
     }
 
-    // printf("eval ast current pid: %d\n", getpid());
     int cpid;
     if ((cpid = fork())) {
         // parent process
