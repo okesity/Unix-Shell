@@ -26,9 +26,6 @@ int isoperator(const char text) {
    }
    return 0;
 }
-int isparen(const char c) {
-   return (c=='(' || c==')');
-}
 
 // adding [start, end] from text to head of xs, return new head
 list* add_cons(const char* text, list* xs, int start, int end) {
@@ -38,32 +35,6 @@ list* add_cons(const char* text, list* xs, int start, int end) {
    xs = cons(command, xs);
    free(command);
    return xs;
-}
-
-int find_alignparen(char* str, int start) {
-   int cnt = 1; 
-   int end = strlen(str);
-   for(int i=start; i<=end; i++) {
-      if(str[i] == '\"') {
-         do {
-            i++;
-         }
-         while(str[i] != '\"');
-
-      }
-      if(str[i] == '(') {
-         cnt++;
-      }
-      else if(str[i] == ')') {
-         cnt--;
-      }
-
-      if(cnt == 0) {
-         return i;
-      }
-  }
-  puts("parens do not align!");
-  return -1;
 }
 
 list* tokenize(char* text) {
@@ -81,14 +52,14 @@ list* tokenize(char* text) {
       //    }
       //    ii = 0;
       // }
-      else if (text[ii] == '\"') {
-         int nn = ii + 1;
-         while(text[nn] != '\"') {
-            nn++;
-         }
-         xs = add_cons(text, xs, ii + 1, nn - 1);
-         ii = nn + 1;
-      }
+      // else if (text[ii] == '\"') {
+      //    int nn = ii + 1;
+      //    while(text[nn] != '\"') {
+      //       nn++;
+      //    }
+      //    xs = add_cons(text, xs, ii + 1, nn - 1);
+      //    ii = nn + 1;
+      // }
       else if (isoperator(text[ii])) {
          int nn = ii;
          while(isoperator(text[nn + 1])) {
@@ -97,19 +68,9 @@ list* tokenize(char* text) {
          xs = add_cons(text, xs, ii, nn);
          ii = nn + 1;
       }
-      else if (text[ii] == '(') {
-         int index = find_alignparen(text, ii + 1);
-         if(index != -1) {
-            xs = add_cons(text, xs, ii, index);
-            ii = index + 1;
-         }
-         else {
-            ii++;
-         }
-      }
       else {
          int nn = ii;
-         while(!isspace(text[nn + 1]) && !isoperator(text[nn + 1]) && !isparen(text[nn + 1])) {
+         while(!isspace(text[nn + 1]) && !isoperator(text[nn + 1])) {
             nn++;
          }
          xs = add_cons(text, xs, ii, nn);
@@ -119,4 +80,25 @@ list* tokenize(char* text) {
 
    return xs;
 }
+
+// int main(int _ac, char* _av[]) {
+//    char line[100];
+
+//    while (1) {
+//      printf("tokens$ ");
+//      fflush(stdout);
+//      char* rv = fgets(line, 99, stdin);
+//      if (!rv) {
+//         exit(0);
+//      }
+//      list* tokens = tokenize(line);
+//      print_list(tokens);
+//      free_list(tokens);
+//    }
+// }
+
+
+
+
+
 

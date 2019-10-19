@@ -28,14 +28,19 @@ void print_ast(sh_ast* ast) {
 
 sh_ast* 
 make_ast(char* op, sh_ast* left, sh_ast* right, char** argv, int len) {
+  // for(int i=0;i<len;i++)
+    // printf("making ast: %s\n", argv[i]);
   sh_ast* res = calloc(1, sizeof(sh_ast));
   res->op = op;
   res->left = left;
   res->right = right;
   for(int i=0;i<len;i++) {
     res->argv[i] = argv[i];
+    // free(argv[i]);
   }
   free(argv);
+  // for(int i=0;i<len;i++)
+  //   printf("adding : %s\n", res->argv[i]);
   return res;
 }
 
@@ -82,6 +87,7 @@ to_array(list* toks, int count) {
   list* it = toks;
   for(int i=0; i<count;i++) {
     res[i] = strdup(it->head);
+    // printf("copying: %s\n", res[i]);
     it = it->tail;
   }
   res[count] = 0;
@@ -105,7 +111,18 @@ int found_assign(char* str) {
   return -1;
 }
 
-
+// char* get_dict(char* str, char** dict) {
+//   char* var = str + 1;
+//   printf("finding %s\n", var);
+//   for(int i=0;i<dic_it;i++) {
+//     printf("searching %s\n", dict[i]);
+//     if(strcmp(var, dict[i]) == 0) {
+//       return strdup(dict[i+1]);
+//     }
+//   }
+//   puts("cannot found from dict");
+//   return 0;
+// }
 
 sh_ast* parse(list* toks, hashmap* map) {
   if(!toks) {
@@ -116,8 +133,7 @@ sh_ast* parse(list* toks, hashmap* map) {
   static dict* dicts[10];
   
   while(it) {
-
-    //check '='
+    //check
     if(found_assign(it->head) != -1) {
       char* line = it->head;
       int len1 = found_assign(line);
@@ -131,21 +147,23 @@ sh_ast* parse(list* toks, hashmap* map) {
 
       hashmap_put(map, left, right);
       return NULL;
+      // printf("dict: %s %s", left, hashmap_get(map, left));
     }
-
     else if(it->head[0] == '$') {
       char* key = it->head + 1;
       char* val = hashmap_get(map, key);
+      // printf("%s found value %s\n", key, val);
       if(val) {
         free(it->head);
         it->head = val;
       }
     }
-
     else if(is_op(it->head)) {
       char* op = strdup(it->head);
+      // printf("found op: %s\n", op);
       list* part = slice(toks, 0, len);
       sh_ast* res = make_ast(op, parse(it->tail, map), parse(part, map), NULL, 0);
+      // free_list(part);
       return res;
     }
     it = it->tail;

@@ -15,21 +15,13 @@
 
 
 void execute(char* cmd, hashmap* map) {
+
     list* tokens = tokenize(cmd);
+    // print_list(tokens);
     sh_ast* asts = parse(tokens, map);
     ast_evalue(asts);
     free_list(tokens);
     free_ast(asts); 
-}
-
-char* concat(char* s1, char* cmd) {
-    char* s2 = strdup(cmd);
-    s2[strlen(s2) - 1] = '\0';
-    char* res = malloc(strlen(s1) + strlen(s2) + 1);
-    strcpy(res, s1);
-    strcat(res, s2);
-    free(s2);
-    return res;
 }
 
 int
@@ -49,22 +41,12 @@ main(int argc, char* argv[])
         while(fgets(cmd, 100, file)) {
             char* du = strdup(cmd);
             du[strlen(du) - 1] = '\0';
-
-            //handle new line '\'
-            if(du[strlen(du) - 1] == '\\') {
-                du[strlen(du) - 1] = '\0';
-                fgets(cmd, 100, file);
-                char* du2 = concat(du, cmd);
-                free(du);
-                du = du2;
-            }
             cmds = cons(du, cmds);
             free(du);
         }
         fclose(file);
         cmds = rev_free(cmds);
         list* it = cmds;
-
         while(it) {
             execute(it->head, map);
             it = it->tail;
@@ -78,11 +60,12 @@ main(int argc, char* argv[])
     while (1) {
         printf("nush$ ");
         fflush(stdout);
-        char* rv = fgets(cmd, 100, stdin);
+        char* rv = fgets(cmd, 99, stdin);
         if (!rv) {
             exit(0);
         }
 
         execute(cmd, map);
+
     }
 }

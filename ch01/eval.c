@@ -11,10 +11,9 @@
 
 #include "eval.h"
 #include "parse.h"
-#include "tokens.h"
-#include "hashmap.h"
 
 // int do_redirect(sh_ast* left, sh_ast* right) {
+
 int do_pipe(sh_ast* left, sh_ast* right) {
   int cpid;
   if((cpid = fork())) {
@@ -47,6 +46,7 @@ int do_pipe(sh_ast* left, sh_ast* right) {
 
 int do_background(sh_ast* cmd) {
   int cpid;
+  // printf("doing background %s\n", cmd->argv[0]);
   if(!(cpid = fork())) {
     int st = ast_evalue(cmd);
     exit(st);
@@ -160,6 +160,8 @@ int ast_evalue(sh_ast* ast) {
         return 0;
     }
     else if (is(ast->argv[0], "exit")) {
+        // puts("on exit");
+
         exit(EXIT_FAILURE);
     }
 
@@ -173,21 +175,13 @@ int ast_evalue(sh_ast* ast) {
         rv = waitpid(cpid, &status, 0);
         assert(rv != -1);
 
+        // printf("process done: %d\n", cpid);
         return status;
     }
     else {
-        if (ast->argv[0] && ast->argv[0][0] == '(') {
-          char* cmd = strdup(ast->argv[0] + 1);
-          cmd[strlen(cmd) - 1] = '\0';
-          list* tokens = tokenize(cmd);
-          hashmap* map = make_hashmap();
-          sh_ast* asts = parse(tokens, map);
-          ast_evalue(asts);
-          free_list(tokens);
-          free_ast(asts);
-
-          exit(1);
-        }
+        // printf("child process %d\n", getpid());
+        // printf("evalutating: %s\n", ast->argv[0]);
+        // printf("evalutating: %s\n", ast->argv[1]);
         execvp(ast->argv[0], ast->argv);
         printf("Can't get here, exec only returns on error.");
         exit(1);
