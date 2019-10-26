@@ -30,12 +30,14 @@ int do_pipe(sh_ast* left, sh_ast* right) {
       close(pipes[1]);
       dup(pipes[0]);
       waitpid(cpid, 0, 0);
+      close(pipes[0]);
     }
     else {
       close(1);
       close(pipes[0]);
       dup(pipes[1]);
       rv = ast_evalue(left);
+      close(pipes[1]);
       exit(rv);
     }
     rv = ast_evalue(right);
